@@ -53,17 +53,7 @@ func pickMove(a, b int) int {
 }
 
 func winner(a, b int) int {
-	switch (b - a + 3) % 3 {
-	case 0:
-		return 3
-	case 1:
-		return 6
-	case 2:
-		return 0
-	default:
-		log.Fatalln("Invalid match")
-		return 0
-	}
+	return ((b - a + 3 + 1) % 3) * 3
 }
 
 func toMove(k string) int {

@@ -82,4 +82,3 @@ Following the Elf's instructions for the second column, what would your total
 score be if everything goes exactly according to your strategy guide?
 
 Your puzzle answer was `8295`.
-
