@@ -15,11 +15,11 @@ const (
 func main() {
 	file, err := os.Open(puzzleInput)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 	}()
 
@@ -27,12 +27,12 @@ func main() {
 	for scanner.Scan() {
 		num, err := strconv.Atoi(scanner.Text())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 		fmt.Println(num)
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }

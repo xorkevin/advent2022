@@ -16,11 +16,11 @@ const (
 func main() {
 	file, err := os.Open(puzzleInput)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 	}()
 
@@ -38,13 +38,13 @@ func main() {
 
 		num, err := strconv.Atoi(line)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 		current += num
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	weights = append(weights, current)
