@@ -120,17 +120,17 @@ func (g Grid) Clone() *Grid {
 
 func (g *Grid) processInstr1(instr Instr) {
 	for i := 0; i < instr.a; i++ {
-		g.push(instr.c-1, g.pop(instr.b-1))
+		g.push(instr.c, g.pop(instr.b))
 	}
 }
 
 func (g *Grid) processInstr2(instr Instr) {
 	stack := make([]byte, 0, instr.a)
 	for i := 0; i < instr.a; i++ {
-		stack = append(stack, g.pop(instr.b-1))
+		stack = append(stack, g.pop(instr.b))
 	}
 	for i, l := 0, instr.a; i < l; i++ {
-		g.push(instr.c-1, stack[l-i-1])
+		g.push(instr.c, stack[l-i-1])
 	}
 }
 
@@ -197,8 +197,8 @@ func parseInstrLine(line string) (Instr, error) {
 	}
 	return Instr{
 		a: a,
-		b: b,
-		c: c,
+		b: b - 1,
+		c: c - 1,
 	}, nil
 }
 
