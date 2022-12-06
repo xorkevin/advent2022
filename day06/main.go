@@ -26,39 +26,39 @@ func main() {
 	seen2 := map[byte]int{}
 
 	for i, l := 0, len(file); (startpos1 < 0 || startpos2 < 0) && i < l; i++ {
+		c := file[i]
+
 		if startpos1 < 0 {
-			if _, ok := seen1[file[i]]; !ok {
-				seen1[file[i]] = 0
+			if _, ok := seen1[c]; !ok {
+				seen1[c] = 0
 			}
-			seen1[file[i]]++
+			seen1[c]++
 			if i > 3 {
-				seen1[file[i-4]]--
-				if seen1[file[i-4]] == 0 {
+				if seen1[file[i-4]] < 2 {
 					delete(seen1, file[i-4])
+				} else {
+					seen1[file[i-4]]--
 				}
 			}
-			if i >= 3 {
-				if isUniq(seen1) {
-					startpos1 = i + 1
-				}
+			if i >= 3 && isUniq(seen1) {
+				startpos1 = i + 1
 			}
 		}
 
 		if startpos2 < 0 {
-			if _, ok := seen2[file[i]]; !ok {
-				seen2[file[i]] = 0
+			if _, ok := seen2[c]; !ok {
+				seen2[c] = 0
 			}
-			seen2[file[i]]++
+			seen2[c]++
 			if i > 13 {
-				seen2[file[i-14]]--
-				if seen2[file[i-14]] == 0 {
+				if seen2[file[i-14]] < 2 {
 					delete(seen2, file[i-14])
+				} else {
+					seen2[file[i-14]]--
 				}
 			}
-			if i >= 13 {
-				if isUniq(seen2) {
-					startpos2 = i + 1
-				}
+			if i >= 13 && isUniq(seen2) {
+				startpos2 = i + 1
 			}
 		}
 	}
