@@ -104,7 +104,6 @@ type (
 	}
 
 	Node struct {
-		name     string
 		children map[string]*Node
 		isDir    bool
 		size     int
@@ -114,23 +113,21 @@ type (
 func NewTerm() *Term {
 	return &Term{
 		pwd:     nil,
-		root:    NewDir("/"),
+		root:    NewDir(),
 		running: "",
 	}
 }
 
-func NewDir(name string) *Node {
+func NewDir() *Node {
 	return &Node{
-		name:     name,
 		children: map[string]*Node{},
 		isDir:    true,
 		size:     0,
 	}
 }
 
-func NewFile(name string, size int) *Node {
+func NewFile(size int) *Node {
 	return &Node{
-		name:     name,
 		children: map[string]*Node{},
 		isDir:    false,
 		size:     size,
@@ -229,7 +226,7 @@ func (t *Term) MkdirPath() (*Node, error) {
 	node := t.root
 	for _, i := range t.pwd {
 		if n, ok := node.children[i]; !ok {
-			node.children[i] = NewDir(i)
+			node.children[i] = NewDir()
 		} else if !n.isDir {
 			return nil, errors.New("Mkdir invalid path")
 		}
@@ -244,7 +241,7 @@ func (t *Term) Mkdir(name string) error {
 		return err
 	}
 	if n, ok := node.children[name]; !ok {
-		node.children[name] = NewDir(name)
+		node.children[name] = NewDir()
 	} else if !n.isDir {
 		return errors.New("Mkdir on non-dir")
 	}
@@ -259,6 +256,6 @@ func (t *Term) Touch(name string, size int) error {
 	if n, ok := node.children[name]; ok && n.isDir {
 		return errors.New("Touch file on dir")
 	}
-	node.children[name] = NewFile(name, size)
+	node.children[name] = NewFile(size)
 	return nil
 }
