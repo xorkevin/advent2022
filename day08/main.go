@@ -57,15 +57,15 @@ type (
 		y, x int
 	}
 
-	Tuple4 struct {
-		t, r, b, l int
+	Tuple5 struct {
+		h, t, r, b, l int
 	}
 
 	Grid struct {
 		w, h    int
 		grid    [][]int
 		visible map[Tuple2]struct{}
-		power   map[Tuple2]*Tuple4
+		power   map[Tuple2]Tuple5
 	}
 )
 
@@ -87,10 +87,6 @@ func NewGrid(grid [][]int) (*Grid, error) {
 	}, nil
 }
 
-func (t Tuple4) power() int {
-	return t.t * t.r * t.b * t.l
-}
-
 func (g *Grid) maxPower() int {
 	max := 0
 	for _, v := range g.power {
@@ -104,7 +100,7 @@ func (g *Grid) maxPower() int {
 
 func (g *Grid) computeVisibleSet() {
 	g.visible = map[Tuple2]struct{}{}
-	g.power = map[Tuple2]*Tuple4{}
+	g.power = map[Tuple2]Tuple5{}
 
 	for y := 0; y < g.h; y++ {
 		// l2r
@@ -117,6 +113,23 @@ func (g *Grid) computeVisibleSet() {
 				tallest = k
 				g.visible[pos] = struct{}{}
 			}
+
+			g.power[pos] = Tuple5{h: k}
+
+			prev := pos.delta(-1, 0)
+			prevPower, ok := g.power[prev]
+			if !ok {
+				continue
+			}
+			visible := 1
+			for k > prevPower.h && prevPower.l > 0 {
+				visible += prevPower.l
+				prev = prev.delta(-prevPower.l, 0)
+				prevPower = g.power[prev]
+			}
+			power := g.power[pos]
+			power.l = visible
+			g.power[pos] = power
 		}
 
 		// r2l
@@ -129,6 +142,21 @@ func (g *Grid) computeVisibleSet() {
 				tallest = k
 				g.visible[pos] = struct{}{}
 			}
+
+			prev := pos.delta(1, 0)
+			prevPower, ok := g.power[prev]
+			if !ok {
+				continue
+			}
+			visible := 1
+			for k > prevPower.h && prevPower.r > 0 {
+				visible += prevPower.r
+				prev = prev.delta(prevPower.r, 0)
+				prevPower = g.power[prev]
+			}
+			power := g.power[pos]
+			power.r = visible
+			g.power[pos] = power
 		}
 	}
 
@@ -143,6 +171,21 @@ func (g *Grid) computeVisibleSet() {
 				tallest = k
 				g.visible[pos] = struct{}{}
 			}
+
+			prev := pos.delta(0, -1)
+			prevPower, ok := g.power[prev]
+			if !ok {
+				continue
+			}
+			visible := 1
+			for k > prevPower.h && prevPower.t > 0 {
+				visible += prevPower.t
+				prev = prev.delta(0, -prevPower.t)
+				prevPower = g.power[prev]
+			}
+			power := g.power[pos]
+			power.t = visible
+			g.power[pos] = power
 		}
 
 		// b2t
@@ -155,6 +198,31 @@ func (g *Grid) computeVisibleSet() {
 				tallest = k
 				g.visible[pos] = struct{}{}
 			}
+
+			prev := pos.delta(0, 1)
+			prevPower, ok := g.power[prev]
+			if !ok {
+				continue
+			}
+			visible := 1
+			for k > prevPower.h && prevPower.b > 0 {
+				visible += prevPower.b
+				prev = prev.delta(0, prevPower.b)
+				prevPower = g.power[prev]
+			}
+			power := g.power[pos]
+			power.b = visible
+			g.power[pos] = power
 		}
 	}
+}
+
+func (t Tuple2) delta(x, y int) Tuple2 {
+	t.x += x
+	t.y += y
+	return t
+}
+
+func (t Tuple5) power() int {
+	return t.t * t.r * t.b * t.l
 }
