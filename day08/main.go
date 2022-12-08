@@ -90,7 +90,7 @@ func NewGrid(grid [][]int) (*Grid, error) {
 func (g *Grid) maxPower() int {
 	max := 0
 	for _, v := range g.power {
-		k := v.power()
+		k := v.getPower()
 		if k > max {
 			max = k
 		}
@@ -114,11 +114,10 @@ func (g *Grid) computeVisibleSet() {
 				g.visible[pos] = struct{}{}
 			}
 
-			g.power[pos] = Tuple5{h: k}
-
 			prev := pos.delta(-1, 0)
 			prevPower, ok := g.power[prev]
 			if !ok {
+				g.power[pos] = Tuple5{h: k}
 				continue
 			}
 			visible := 1
@@ -127,9 +126,7 @@ func (g *Grid) computeVisibleSet() {
 				prev = prev.delta(-prevPower.l, 0)
 				prevPower = g.power[prev]
 			}
-			power := g.power[pos]
-			power.l = visible
-			g.power[pos] = power
+			g.power[pos] = Tuple5{h: k, l: visible}
 		}
 
 		// r2l
@@ -223,6 +220,6 @@ func (t Tuple2) delta(x, y int) Tuple2 {
 	return t
 }
 
-func (t Tuple5) power() int {
+func (t *Tuple5) getPower() int {
 	return t.t * t.r * t.b * t.l
 }
