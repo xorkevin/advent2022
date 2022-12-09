@@ -68,7 +68,7 @@ type (
 	}
 )
 
-func (t Tuple2) Move(dir string) (Tuple2, error) {
+func (t *Tuple2) Move(dir string) error {
 	switch dir {
 	case "U":
 		t.y -= 1
@@ -79,15 +79,14 @@ func (t Tuple2) Move(dir string) (Tuple2, error) {
 	case "L":
 		t.x -= 1
 	default:
-		return Tuple2{}, errors.New("Invalid direction")
+		return errors.New("Invalid direction")
 	}
-	return t, nil
+	return nil
 }
 
-func (t Tuple2) Delta(p Tuple2) Tuple2 {
+func (t *Tuple2) Delta(p Tuple2) {
 	t.x += p.x
 	t.y += p.y
-	return t
 }
 
 func (t Tuple2) Dist(p Tuple2) Tuple2 {
@@ -98,21 +97,20 @@ func (t Tuple2) Dist(p Tuple2) Tuple2 {
 }
 
 func (t Tuple2) Dir() Tuple2 {
-	if t.x != 0 {
-		if t.x > 0 {
-			t.x = 1
-		} else {
-			t.x = -1
-		}
+	return Tuple2{
+		x: unitDir(t.x),
+		y: unitDir(t.y),
 	}
-	if t.y != 0 {
-		if t.y > 0 {
-			t.y = 1
-		} else {
-			t.y = -1
-		}
+}
+
+func unitDir(a int) int {
+	if a == 0 {
+		return 0
 	}
-	return t
+	if a > 0 {
+		return 1
+	}
+	return -1
 }
 
 func abs(a int) int {
@@ -144,22 +142,19 @@ func NewRope(size int) *Rope {
 }
 
 func (r *Rope) Move(dir string) error {
-	next, err := r.h.Move(dir)
-	if err != nil {
+	if err := r.h.Move(dir); err != nil {
 		return err
 	}
-	r.h = next
+	next := r.h
 	last := len(r.t) - 1
-	for i, t := range r.t {
-		if k := t.Dist(next); k.MaxMag() > 1 {
-			next = t.Delta(k.Dir())
+	for i := range r.t {
+		if k := r.t[i].Dist(next); k.MaxMag() > 1 {
+			r.t[i].Delta(k.Dir())
 			if i == last {
-				r.history[next] = struct{}{}
+				r.history[r.t[i]] = struct{}{}
 			}
-		} else {
-			next = t
 		}
-		r.t[i] = next
+		next = r.t[i]
 	}
 	return nil
 }
