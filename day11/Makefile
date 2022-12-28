@@ -11,7 +11,7 @@ GOSRC=$(shell find . -type f -name '*.go')
 RSSRC=$(shell find . -type f -name '*.rs')
 
 run:
-	go run .
+	go run main.go
 
 build: build-go build-rs
 
@@ -37,3 +37,20 @@ build-rs: $(RSBIN)
 
 $(RSBIN): $(RSSRC)
 	cargo build --release
+
+## CODEGEN
+
+.PHONY: fmt generate gen cleangen
+
+fmt:
+	goimports -w .
+
+GENSRC=$(shell find . -name '*_gen.go')
+
+generate:
+	go generate ./...
+
+gen: generate fmt
+
+cleangen:
+	rm $(GENSRC)
