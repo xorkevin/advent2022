@@ -18,8 +18,8 @@ const templateMain = `// Code generated; DO NOT EDIT.
 
 package {{ .GoPackage }}
 
-func getInputMonkeys() []Monkey {
-	return []Monkey{
+func getInputMonkeys() []*Monkey {
+	return []*Monkey{
 		{{- range .Monkeys }}
 		{
 			Items: []int{{ "{" }}{{ .Items }}{{ "}" }},
@@ -56,10 +56,15 @@ func main() {
 		log.Fatalln("No GOPACKAGE env var provided by go generate")
 	}
 
+	var infile string
+	flag.StringVar(&infile, "i", "", "input file")
 	var outfile string
 	flag.StringVar(&outfile, "o", "", "output file")
 	flag.Parse()
 
+	if len(infile) == 0 {
+		log.Fatalln("No input file (-i) provided")
+	}
 	if len(outfile) == 0 {
 		log.Fatalln("No output file (-o) provided")
 	}
@@ -69,7 +74,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	file, err := os.Open("input.txt")
+	file, err := os.Open(infile)
 	if err != nil {
 		log.Fatalln(err)
 	}

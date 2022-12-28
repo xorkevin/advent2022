@@ -2,8 +2,8 @@
 
 package main
 
-func getInputMonkeys() []Monkey {
-	return []Monkey{
+func getInputMonkeys() []*Monkey {
+	return []*Monkey{
 		{
 			Items: []int{84, 66, 62, 69, 88, 91, 91},
 			Op: func(old int) int {

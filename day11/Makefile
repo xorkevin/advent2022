@@ -11,7 +11,7 @@ GOSRC=$(shell find . -type f -name '*.go')
 RSSRC=$(shell find . -type f -name '*.rs')
 
 run:
-	go run main.go
+	go run .
 
 build: build-go build-rs
 
