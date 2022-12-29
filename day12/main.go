@@ -129,8 +129,7 @@ func (g Grid) neighbors(k Pos) []AStarEdge[Pos] {
 			y: k.y + i.y,
 			x: k.x + i.x,
 		}
-		v, ok := g.get(k)
-		if !ok || v > limit {
+		if v, ok := g.get(k); !ok || v > limit {
 			continue
 		}
 		e = append(e, AStarEdge[Pos]{
