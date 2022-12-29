@@ -10,6 +10,12 @@ type (
 		Value T
 		DG    int
 	}
+
+	astarAdjacent[T comparable] struct {
+		g       int
+		hasPrev bool
+		prev    T
+	}
 )
 
 func astarNodeLess[T comparable](a, b astarNode[T]) bool {
@@ -23,21 +29,26 @@ func astarNodeLess[T comparable](a, b astarNode[T]) bool {
 
 func AStarSearch[T comparable](start []T, goal T, neighbors func(k T) []AStarEdge[T], heuristic func(a, b T) int) ([]T, int) {
 	open := NewHeap(astarNodeLess[T])
-	gscore := map[T]int{}
-	adjacent := map[T]T{}
+	adjacent := map[T]astarAdjacent[T]{}
 	for _, i := range start {
 		open.Add(astarNode[T]{
 			v: i,
 			g: 0,
 			h: heuristic(i, goal),
 		})
-		gscore[i] = 0
+		adjacent[i] = astarAdjacent[T]{
+			g: 0,
+		}
 	}
 	for current, ok := open.Remove(); ok; current, ok = open.Remove() {
 		if current.v == goal {
 			revpath := []T{current.v}
-			for i, ok := adjacent[current.v]; ok; i, ok = adjacent[i] {
-				revpath = append(revpath, i)
+			for i, ok := adjacent[current.v]; ok; {
+				if !i.hasPrev {
+					break
+				}
+				revpath = append(revpath, i.prev)
+				i, ok = adjacent[i.prev]
 			}
 			n := len(revpath)
 			for i := 0; i < n/2; i++ {
@@ -48,11 +59,14 @@ func AStarSearch[T comparable](start []T, goal T, neighbors func(k T) []AStarEdg
 
 		for _, i := range neighbors(current.v) {
 			ng := current.g + i.DG
-			if g, ok := gscore[i.Value]; ok && ng >= g {
+			if g, ok := adjacent[i.Value]; ok && ng >= g.g {
 				continue
 			}
-			adjacent[i.Value] = current.v
-			gscore[i.Value] = ng
+			adjacent[i.Value] = astarAdjacent[T]{
+				g:       ng,
+				hasPrev: true,
+				prev:    current.v,
+			}
 			open.Add(astarNode[T]{
 				v: i.Value,
 				g: ng,

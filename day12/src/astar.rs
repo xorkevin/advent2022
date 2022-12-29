@@ -52,6 +52,11 @@ pub trait Neighborer<T> {
     fn neighbors(&self, k: &T) -> Vec<Edge<T>>;
 }
 
+struct AStarAdjacent<T> {
+    g: usize,
+    prev: Option<T>,
+}
+
 pub fn search<T>(
     start: &[T],
     goal: &T,
@@ -62,23 +67,26 @@ where
     T: Clone + Ord + Hash,
 {
     let mut open = BinaryHeap::new();
-    let mut gscore = HashMap::new();
-    let mut adjacent = HashMap::<T, T>::new();
+    let mut adjacent = HashMap::<T, AStarAdjacent<T>>::new();
     for i in start {
         open.push(Node {
             v: i.clone(),
             g: 0,
             h: heuristic(i, goal),
         });
-        gscore.insert(i.clone(), 0);
+        adjacent.insert(i.clone(), AStarAdjacent { g: 0, prev: None });
     }
     while let Some(current) = open.pop() {
         if &current.v == goal {
             let mut revpath = vec![current.v.clone()];
             let mut k = current.v;
             while let Some(i) = adjacent.remove(&k) {
-                revpath.push(i.clone());
-                k = i;
+                if let Some(p) = i.prev {
+                    revpath.push(p.clone());
+                    k = p;
+                } else {
+                    break;
+                }
             }
             revpath.reverse();
             return Some((revpath, current.g));
@@ -86,13 +94,18 @@ where
 
         for i in neighborer.neighbors(&current.v) {
             let ng = current.g + i.dg;
-            if let Some(&g) = gscore.get(&i.value) {
-                if ng >= g {
+            if let Some(g) = adjacent.get(&i.value) {
+                if ng >= g.g {
                     continue;
                 }
             }
-            adjacent.insert(i.value.clone(), current.v.clone());
-            gscore.insert(i.value.clone(), ng);
+            adjacent.insert(
+                i.value.clone(),
+                AStarAdjacent {
+                    g: ng,
+                    prev: Some(current.v.clone()),
+                },
+            );
             open.push(Node {
                 v: i.value.clone(),
                 g: ng,
