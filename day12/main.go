@@ -133,8 +133,8 @@ func (g Grid) neighbors(k Pos) []AStarEdge[Pos] {
 			continue
 		}
 		e = append(e, AStarEdge[Pos]{
-			Key: k,
-			DG:  1,
+			Value: k,
+			DG:    1,
 		})
 	}
 	return e

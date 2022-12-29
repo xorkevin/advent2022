@@ -1,17 +1,18 @@
 package main
 
 type (
-	astarNode struct {
+	astarNode[T comparable] struct {
+		v    T
 		g, h int
 	}
 
-	AStarEdge[K comparable] struct {
-		Key K
-		DG  int
+	AStarEdge[T comparable] struct {
+		Value T
+		DG    int
 	}
 )
 
-func astarNodeLess(a, b astarNode) bool {
+func astarNodeLess[T comparable](a, b astarNode[T]) bool {
 	af := a.g + a.h
 	bf := b.g + b.h
 	if af == bf {
@@ -20,40 +21,42 @@ func astarNodeLess(a, b astarNode) bool {
 	return af < bf
 }
 
-func AStarSearch[K comparable](start []K, goal K, neighbors func(k K) []AStarEdge[K], heuristic func(a, b K) int) ([]K, int) {
-	open := NewHeap[K](astarNodeLess)
-	gscore := map[K]int{}
-	adjacent := map[K]K{}
+func AStarSearch[T comparable](start []T, goal T, neighbors func(k T) []AStarEdge[T], heuristic func(a, b T) int) ([]T, int) {
+	open := NewHeap(astarNodeLess[T])
+	gscore := map[T]int{}
+	adjacent := map[T]T{}
 	for _, i := range start {
-		open.Upsert(i, astarNode{
+		open.Add(astarNode[T]{
+			v: i,
 			g: 0,
 			h: heuristic(i, goal),
 		})
 		gscore[i] = 0
 	}
-	for k, v, ok := open.Remove(); ok; k, v, ok = open.Remove() {
-		if k == goal {
-			revpath := []K{k}
-			for i, ok := adjacent[k]; ok; i, ok = adjacent[i] {
+	for current, ok := open.Remove(); ok; current, ok = open.Remove() {
+		if current.v == goal {
+			revpath := []T{current.v}
+			for i, ok := adjacent[current.v]; ok; i, ok = adjacent[i] {
 				revpath = append(revpath, i)
 			}
 			n := len(revpath)
 			for i := 0; i < n/2; i++ {
 				revpath[i], revpath[n-i-1] = revpath[n-i-1], revpath[i]
 			}
-			return revpath, v.g
+			return revpath, current.g
 		}
 
-		for _, i := range neighbors(k) {
-			ng := v.g + i.DG
-			if g, ok := gscore[i.Key]; ok && ng >= g {
+		for _, i := range neighbors(current.v) {
+			ng := current.g + i.DG
+			if g, ok := gscore[i.Value]; ok && ng >= g {
 				continue
 			}
-			adjacent[i.Key] = k
-			gscore[i.Key] = ng
-			open.Upsert(i.Key, astarNode{
+			adjacent[i.Value] = current.v
+			gscore[i.Value] = ng
+			open.Add(astarNode[T]{
+				v: i.Value,
 				g: ng,
-				h: heuristic(i.Key, goal),
+				h: heuristic(i.Value, goal),
 			})
 		}
 	}

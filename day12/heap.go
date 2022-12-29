@@ -5,110 +5,52 @@ import (
 )
 
 type (
-	heapItem[K comparable, V any] struct {
-		key   K
-		value V
-		index int
-	}
-
-	Heap[K comparable, V any] struct {
-		tree  []K
-		items map[K]*heapItem[K, V]
-		less  func(a, b V) bool
+	Heap[T any] struct {
+		tree []T
+		less func(a, b T) bool
 	}
 )
 
-func NewHeap[K comparable, V any](less func(a, b V) bool) *Heap[K, V] {
-	return &Heap[K, V]{
-		tree:  nil,
-		items: map[K]*heapItem[K, V]{},
-		less:  less,
+func NewHeap[T any](less func(a, b T) bool) *Heap[T] {
+	return &Heap[T]{
+		tree: nil,
+		less: less,
 	}
 }
 
-func (h Heap[K, V]) Len() int {
+func (h Heap[T]) Len() int {
 	return len(h.tree)
 }
 
-func (h Heap[K, V]) Less(i, j int) bool {
-	return h.less(h.items[h.tree[i]].value, h.items[h.tree[j]].value)
+func (h Heap[T]) Less(i, j int) bool {
+	return h.less(h.tree[i], h.tree[j])
 }
 
-func (h Heap[K, V]) Swap(i, j int) {
-	a := h.tree[i]
-	b := h.tree[j]
-	h.tree[i], h.tree[j] = b, a
-	h.items[b].index = i
-	h.items[a].index = j
+func (h Heap[T]) Swap(i, j int) {
+	h.tree[i], h.tree[j] = h.tree[j], h.tree[i]
 }
 
-func (h *Heap[K, V]) Push(x any) {
-	n := len(h.tree)
-	item := x.(*heapItem[K, V])
-	item.index = n
-	h.tree = append(h.tree, item.key)
-	h.items[item.key] = item
+func (h *Heap[T]) Push(x any) {
+	k := x.(T)
+	h.tree = append(h.tree, k)
 }
 
-func (h *Heap[K, V]) Pop() any {
+func (h *Heap[T]) Pop() any {
 	n := len(h.tree)
 	k := h.tree[n-1]
 	h.tree = h.tree[:n-1]
-	item := h.items[k]
-	item.index = -1
-	delete(h.items, k)
-	return item
+	return k
 }
 
-func (h *Heap[K, V]) Upsert(k K, v V) {
-	item, ok := h.items[k]
-	if !ok {
-		heap.Push(h, &heapItem[K, V]{
-			key:   k,
-			value: v,
-		})
-		return
-	}
-	item.value = v
-	heap.Fix(h, item.index)
+func (h *Heap[T]) Add(v T) {
+	heap.Push(h, v)
 }
 
-func (h *Heap[K, V]) Remove() (K, V, bool) {
+func (h *Heap[T]) Remove() (T, bool) {
 	if len(h.tree) == 0 {
-		var k K
-		var v V
-		return k, v, false
+		var k T
+		return k, false
 	}
-	item := heap.Pop(h).(*heapItem[K, V])
-	return item.key, item.value, true
-}
-
-func (h Heap[K, V]) Has(k K) bool {
-	_, ok := h.items[k]
-	return ok
-}
-
-type (
-	Set[T comparable] struct {
-		vals map[T]struct{}
-	}
-)
-
-func NewSet[T comparable]() *Set[T] {
-	return &Set[T]{
-		vals: map[T]struct{}{},
-	}
-}
-
-func (s Set[T]) Has(v T) bool {
-	_, ok := s.vals[v]
-	return ok
-}
-
-func (s Set[T]) Add(v T) {
-	s.vals[v] = struct{}{}
-}
-
-func (s Set[T]) Remove(v T) {
-	delete(s.vals, v)
+	k := heap.Pop(h).(T)
+	return k, true
 }

@@ -112,7 +112,7 @@ impl astar::Neighborer<Pos> for Grid {
             };
             if let Some(v) = self.get(&k) {
                 if v <= limit {
-                    e.push(astar::Edge { key: k, dg: 1 })
+                    e.push(astar::Edge { value: k, dg: 1 })
                 }
             }
         }
