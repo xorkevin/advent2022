@@ -113,7 +113,7 @@ fn main() {
                 i.discard();
             }
         }
-        counts.sort_by(|a, b| b.cmp(a));
+        counts.sort_unstable_by(|a, b| b.cmp(a));
         if let [first, second, ..] = counts[..] {
             println!("Part 1: {}", first * second);
         }
@@ -136,7 +136,7 @@ fn main() {
                 i.discard();
             }
         }
-        counts.sort_by(|a, b| b.cmp(a));
+        counts.sort_unstable_by(|a, b| b.cmp(a));
         if let [first, second, ..] = counts[..] {
             println!("Part 2: {}", first * second);
         }

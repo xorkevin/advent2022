@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             current += line.parse::<i32>()?;
         }
         nums.push(current);
-        nums.sort_by_key(|&k| Reverse(k));
+        nums.sort_unstable_by_key(|&k| Reverse(k));
         nums
     };
 
