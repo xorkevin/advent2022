@@ -227,6 +227,6 @@ func parseSignal(tokens []Token[TKind, byte]) (*Signal, []Token[TKind, byte], er
 			}, tokens, nil
 		}
 	default:
-		return nil, tokens, errors.New("Failed to parse")
+		return nil, tokens, fmt.Errorf("%w: invalid token %v", ErrorParse, top)
 	}
 }
