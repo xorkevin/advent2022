@@ -31,7 +31,8 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		var points []Pos
+		first := true
+		var last Pos
 		for _, i := range strings.Split(scanner.Text(), " -> ") {
 			sx, sy, ok := strings.Cut(i, ",")
 			if !ok {
@@ -45,27 +46,29 @@ func main() {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			points = append(points, Pos{y: y, x: x})
-		}
-		last := points[0]
-		grid1[last] = struct{}{}
-		grid2[last] = struct{}{}
-		if v, ok := lowest[last.x]; !ok || last.y > v {
-			lowest[last.x] = last.y
-			if last.y > floor {
-				floor = last.y
-			}
-		}
-		for _, i := range points[1:] {
-			delta := unitDelta(last, i)
-			for last != i {
-				last = addPos(last, delta)
+			pos := Pos{y: y, x: x}
+			if first {
+				first = false
+				last = pos
 				grid1[last] = struct{}{}
 				grid2[last] = struct{}{}
 				if v, ok := lowest[last.x]; !ok || last.y > v {
 					lowest[last.x] = last.y
 					if last.y > floor {
 						floor = last.y
+					}
+				}
+			} else {
+				delta := unitDelta(last, pos)
+				for last != pos {
+					last = addPos(last, delta)
+					grid1[last] = struct{}{}
+					grid2[last] = struct{}{}
+					if v, ok := lowest[last.x]; !ok || last.y > v {
+						lowest[last.x] = last.y
+						if last.y > floor {
+							floor = last.y
+						}
 					}
 				}
 			}
