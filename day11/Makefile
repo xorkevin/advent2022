@@ -1,6 +1,6 @@
 .PHONY: run build bench go run-go build-go rs run-rs build-rs
 
-BENCHARGS=-w 8 --shell=none
+BENCHARGS=--warmup=8 --shell=none --time-unit=millisecond
 BENCH=hyperfine
 BIN=$(notdir $(CURDIR))
 
