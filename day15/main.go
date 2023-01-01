@@ -101,25 +101,27 @@ func main() {
 					continue
 				}
 				for _, i := range sensors {
-					if i.InRange(pos) {
-						_, x2, ok := i.BoundsX(puzzleRow)
-						if !ok {
-							log.Fatalln("Invariant violated")
-						}
-						if x2 == x {
-							count++
-							break
-						}
+					if !i.InRange(pos) {
+						continue
+					}
+					_, x2, ok := i.BoundsX(puzzleRow)
+					if !ok {
+						log.Fatalln("Invariant violated")
+					}
+					if x2 == x {
+						count++
+					} else {
 						count += x2 - x
 						x = x2 - 1
-						break
 					}
+					break
 				}
 			}
 		}
 		fmt.Println("Part 1:", count)
 	}
 	{
+	outer2:
 		for y := 0; y <= puzzleBound; y++ {
 		outer:
 			for x := 0; x <= puzzleBound; x++ {
@@ -128,17 +130,18 @@ func main() {
 					x: x,
 				}
 				for _, i := range sensors {
-					if i.InRange(pos) {
-						_, x2, ok := i.BoundsX(y)
-						if !ok {
-							log.Fatalln("Invariant violated")
-						}
-						x = x2
-						continue outer
+					if !i.InRange(pos) {
+						continue
 					}
+					_, x2, ok := i.BoundsX(y)
+					if !ok {
+						log.Fatalln("Invariant violated")
+					}
+					x = x2
+					continue outer
 				}
 				fmt.Println("Part 2:", x*puzzleBound+y)
-				return
+				break outer2
 			}
 		}
 	}
@@ -171,9 +174,10 @@ func (s *Sensor) InRange(pos Pos) bool {
 }
 
 func (s *Sensor) BoundsX(y int) (int, int, bool) {
-	if abs(s.pos.y-y) > s.radius {
+	vdelta := abs(s.pos.y - y)
+	if vdelta > s.radius {
 		return 0, 0, false
 	}
-	delta := s.radius - abs(s.pos.y-y)
+	delta := s.radius - vdelta
 	return s.pos.x - delta, s.pos.x + delta, true
 }
