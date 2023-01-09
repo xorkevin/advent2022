@@ -1,24 +1,24 @@
 package main
 
 type (
-	astarNode[T comparable] struct {
+	astarNode[T any] struct {
 		v    T
 		g, h int
 	}
 
-	AStarEdge[T comparable] struct {
+	AStarEdge[T any] struct {
 		Value T
 		DG    int
 	}
 
-	astarAdjacent[T comparable] struct {
+	astarAdjacent[T any] struct {
 		g       int
 		hasPrev bool
 		prev    T
 	}
 )
 
-func astarNodeLess[T comparable](a, b astarNode[T]) bool {
+func astarNodeLess[T any](a, b astarNode[T]) bool {
 	af := a.g + a.h
 	bf := b.g + b.h
 	if af == bf {
