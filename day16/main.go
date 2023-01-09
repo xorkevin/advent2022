@@ -66,15 +66,36 @@ func main() {
 	sort.Slice(valves, func(i, j int) bool {
 		return valves[i].Rate > valves[j].Rate
 	})
+	for n, i := range valves {
+		k := i
+		k.ID = 1 << n
+		valves[n] = k
+	}
 
 	dist := FloydWarshall(nodes, edges)
 
 	fmt.Println("Part 1:", searchMax(0, 30, "AA", map[string]struct{}{}, valves, dist, 0))
+	allPaths := map[int]int{}
+	searchPaths(0, 0, 26, "AA", map[string]struct{}{}, allPaths, valves, dist)
+	maxFlow := 0
+	for k, v := range allPaths {
+		for k2, v2 := range allPaths {
+			if k&k2 != 0 {
+				continue
+			}
+			flow := v + v2
+			if flow > maxFlow {
+				maxFlow = flow
+			}
+		}
+	}
+	fmt.Println("Part 2:", maxFlow)
 }
 
 type (
 	Valve struct {
 		Name string
+		ID   int
 		Rate int
 	}
 )
@@ -131,4 +152,31 @@ func searchMax(acc int, remaining int, pos string, toggled map[string]struct{}, 
 	}
 
 	return maxFlow
+}
+
+func searchPaths(acc int, curPath int, remaining int, pos string, toggled map[string]struct{}, allPaths map[int]int, valves []Valve, dist PairwiseDistances[string]) {
+	if remaining <= 0 {
+		return
+	}
+
+	if v, ok := allPaths[curPath]; !ok || acc > v {
+		allPaths[curPath] = acc
+	}
+
+	for _, i := range valves {
+		if _, ok := toggled[i.Name]; ok {
+			continue
+		}
+		cost, ok := dist.EdgeCost(pos, i.Name)
+		if !ok {
+			continue
+		}
+		nextRemaining := remaining - cost - 1
+		if nextRemaining <= 0 {
+			continue
+		}
+		toggled[i.Name] = struct{}{}
+		searchPaths(acc+i.Rate*nextRemaining, curPath|i.ID, nextRemaining, i.Name, toggled, allPaths, valves, dist)
+		delete(toggled, i.Name)
+	}
 }
