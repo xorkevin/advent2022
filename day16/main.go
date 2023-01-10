@@ -75,15 +75,33 @@ func main() {
 	dist := FloydWarshall(nodes, edges)
 
 	fmt.Println("Part 1:", searchMax(0, 30, "AA", map[string]struct{}{}, valves, dist, 0))
-	allPaths := map[int]int{}
-	searchPaths(0, 0, 26, "AA", map[string]struct{}{}, allPaths, valves, dist)
+
+	pathMap := map[int]int{}
+	searchPaths(0, 0, 26, "AA", map[string]struct{}{}, pathMap, valves, dist)
+	allPaths := make([]Path, 0, len(pathMap))
+	for k, v := range pathMap {
+		allPaths = append(allPaths, Path{
+			ID:   k,
+			Flow: v,
+		})
+	}
+	sort.Slice(allPaths, func(i, j int) bool {
+		return allPaths[i].Flow > allPaths[j].Flow
+	})
+
 	maxFlow := 0
-	for k, v := range allPaths {
-		for k2, v2 := range allPaths {
-			if k&k2 != 0 {
+	for n, i := range allPaths {
+		if i.Flow*2 <= maxFlow {
+			break
+		}
+		for _, j := range allPaths[n+1:] {
+			flow := i.Flow + j.Flow
+			if flow <= maxFlow {
+				break
+			}
+			if i.ID&j.ID != 0 {
 				continue
 			}
-			flow := v + v2
 			if flow > maxFlow {
 				maxFlow = flow
 			}
@@ -93,6 +111,11 @@ func main() {
 }
 
 type (
+	Path struct {
+		ID   int
+		Flow int
+	}
+
 	Valve struct {
 		Name string
 		ID   int
