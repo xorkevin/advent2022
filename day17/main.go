@@ -9,14 +9,11 @@ import (
 
 const (
 	puzzleInput = "input.txt"
+	puzzlePart1 = 2022
+	puzzlePart2 = 1_000_000_000_000
 )
 
 func main() {
-	sim := NewSim()
-	shapeCount := 0
-	nextShape := 0
-	nextByte := 0
-
 	puzzleBytes, err := os.ReadFile(puzzleInput)
 	if err != nil {
 		log.Fatalln(err)
@@ -24,17 +21,66 @@ func main() {
 	if unicode.IsSpace(rune(puzzleBytes[len(puzzleBytes)-1])) {
 		puzzleBytes = puzzleBytes[:len(puzzleBytes)-1]
 	}
+
+	sim := NewSim()
+	shapeCount := 0
+	nextShape := 0
+	nextByte := 0
+
+	seenStates := map[int]SimState{}
+
+	foundCycle := false
+	skipped := false
+
+	var dShape int
+	var dHeight int
+
+	skippedShapes := 0
+	skippedHeight := 0
+
 	for {
 		if !sim.hasShape() {
-			//fmt.Println("spawn")
-			if shapeCount == 2022 {
+			if shapeCount == puzzlePart1 {
+				fmt.Println("Part 1:", sim.top)
+			}
+
+			if !foundCycle {
+				state := nextByte*len(shapes) + nextShape
+				if v, ok := seenStates[state]; ok {
+					if v.count == 2 {
+						dShape = shapeCount - v.shapeCount
+						dHeight = sim.top - v.height
+						foundCycle = true
+					}
+					seenStates[state] = SimState{
+						count:      v.count + 1,
+						shapeCount: shapeCount,
+						height:     sim.top,
+					}
+				} else {
+					seenStates[state] = SimState{
+						count:      1,
+						shapeCount: shapeCount,
+						height:     sim.top,
+					}
+				}
+			}
+
+			if !skipped && foundCycle && shapeCount >= puzzlePart1 {
+				cycles := (puzzlePart2 - shapeCount) / dShape
+				skippedShapes = cycles * dShape
+				skippedHeight = cycles * dHeight
+				skipped = true
+			}
+
+			if shapeCount+skippedShapes == puzzlePart2 {
+				fmt.Println("Part 2:", sim.top+skippedHeight)
 				break
 			}
+
 			sim.addShape(nextShape)
 			shapeCount++
 			nextShape = (nextShape + 1) % len(shapes)
-			//sim.render()
-			//fmt.Println()
 		}
 		b := puzzleBytes[nextByte]
 		nextByte = (nextByte + 1) % len(puzzleBytes)
@@ -42,27 +88,25 @@ func main() {
 		switch b {
 		case '<':
 			pushRight = false
-			//fmt.Println("push left")
 		case '>':
 			pushRight = true
-			//fmt.Println("push right")
 		default:
 			log.Fatalln("Invalid dir")
 		}
 		sim.pushDir(pushRight)
-		//sim.render()
-		//fmt.Println()
-		//fmt.Println("fall")
 		if !sim.fall() {
 			sim.commitShape()
 		}
-		//sim.render()
-		//fmt.Println()
 	}
-	fmt.Println("Part 1:", sim.top)
 }
 
 type (
+	SimState struct {
+		count      int
+		shapeCount int
+		height     int
+	}
+
 	Pos struct {
 		y, x int
 	}
