@@ -131,7 +131,8 @@ func NewSim() *Sim {
 }
 
 func (s *Sim) addRows() {
-	for len(s.grid) < s.top+7 {
+	t := s.top + 7
+	for len(s.grid) < t {
 		s.grid = append(s.grid, []byte("......."))
 	}
 }
